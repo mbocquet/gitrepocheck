@@ -24,7 +24,7 @@ do
     # On branch master
     # nothing to commit, working directory clean
     # So if the last sentence, is not found, print the git status output
-    if ! grep -q "nothing to commit, working directory clean" ${TMPFILE}
+    if ! grep -q "nothing to commit.*working directory clean" ${TMPFILE}
     then
         printf "GIT repository at ${HOSTNAME}:${DIR} has changed\n"
         cat ${TMPFILE}
