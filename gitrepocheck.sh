@@ -22,9 +22,9 @@ do
     # if git status report nothing to commit, it looks like these two following
     # lines :
     # On branch master
-    # nothing to commit, working directory clean
+    # nothing to commit...
     # So if the last sentence, is not found, print the git status output
-    if ! grep -q "nothing to commit.*working directory clean" ${TMPFILE}
+    if ! grep -q "nothing to commit" ${TMPFILE}
     then
         printf "GIT repository at ${HOSTNAME}:${DIR} has changed\n"
         cat ${TMPFILE}
