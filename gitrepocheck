@@ -1,37 +1,50 @@
 #!/bin/bash
 
 # 'gitRepoCheck'. Check GIT repositories for changed stuff.
-# Copyright © 2015 Mathias Bocquet <mbocquet@sekoya.org>
+# Copyright © 2015-2016 Mathias Bocquet <mbocquet@sekoya.org>
 
-if [ $# -lt 1 ]
-then
-    PATHTOCHECK=""
-else
-    PATHTOCHECK="$1"
-fi
+while getopts ":h:p:s:" opts
+do
+  case $opts in
+    p)
+        PATHTOCHECK="$OPTARG"
+        ;;
+    s)
+        SKIP="$OPTARG"
+        ;;
+    \?|*|h)
+        printf "Usage : $(basename $0) [ -p <path>] [-s <skiped dir>]\n"
+        exit 0
+        ;;
+  esac
+done
 
-# Create a temporary file with this script as prefix
+# Create a temporary file with this script name as prefix
 TMPFILE="$(tempfile -p $(basename $0))"
 
-for REPOSITORY in $(find ${PATHTOCHECK} -xdev -type d -iname .git)
+for REPO in $(find ${PATHTOCHECK} -xdev -type d -name .git)
 do
-    # Strip '/.git' part of the REPOSITORY
-    DIR=$(echo ${REPOSITORY}|sed 's;/.git;;')
-    cd ${DIR}
-    git status > ${TMPFILE}
-    # if git status report nothing to commit, it looks like these two following
-    # lines :
-    # On branch master
-    # nothing to commit, working directory clean
-    # So if the last sentence, is not found, print the git status output
-    if ! grep -q "nothing to commit.*working.*clean" ${TMPFILE}
+    # Strip '/.git' part of the REPO
+    DIR=$(echo ${REPO}|sed 's;/.git;;')
+    # Do the action if $SKIP is empty or if $DIR doesn't contains $SKIP
+    if [ -z "${SKIP}" ] || ! [[ "${DIR}" =~ "${SKIP}" ]]
     then
-        printf "GIT repository at ${HOSTNAME}:${DIR} has changed\n"
-        cat ${TMPFILE}
+        cd ${DIR}
+        git status > ${TMPFILE}
+        # if git status report nothing to commit, it looks like these two following
+        # lines :
+        # On branch master
+        # nothing to commit, working directory clean
+        # So if the last sentence, is not found, print the git status output
+        if ! grep -q "nothing to commit.*working.*clean" ${TMPFILE}
+        then
+            printf "GIT repository at ${HOSTNAME}:${DIR} has changed\n"
+            cat ${TMPFILE}
+        fi
+        cd - >/dev/null
+        # Blank the temporary file
+        >${TMPFILE}
     fi
-    cd - >/dev/null
-    # Blank the temporary file
-    >${TMPFILE}
 done
 
 rm ${TMPFILE}
