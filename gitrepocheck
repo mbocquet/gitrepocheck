@@ -33,7 +33,7 @@ do
         git status > ${TMPFILE}
         # if git status report nothing to commit, it looks like these two following
         # lines :
-        # On branch master
+        # On branch <branchName>
         # nothing to commit, working directory clean
         # So if the last sentence, is not found, print the git status output
         if ! grep -q "nothing to commit.*working.*clean" ${TMPFILE}
