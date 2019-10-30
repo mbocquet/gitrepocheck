@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-# 'gitRepoCheck'. Check GIT repositories for changed stuff.
-# Copyright © 2015-2017 Mathias Bocquet <mbocquet@sekoya.org>
+# 'gitrepocheck'. Check GIT repositories for changed stuff.
+# Copyright © 2015-2019 Mathias Bocquet <mbocquet@sekoya.org>
 
 while getopts ":h:p:s:" opts
 do
