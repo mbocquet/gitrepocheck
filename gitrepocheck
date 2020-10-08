@@ -20,7 +20,7 @@ do
 done
 
 # Create a temporary file with this script name as prefix
-TMPFILE="$(tempfile -p $(basename $0))"
+TMPFILE="$(mktemp --suffix=-$(basename $0))"
 
 for REPO in $(find ${PATHTOCHECK} -xdev -type d -name .git)
 do
