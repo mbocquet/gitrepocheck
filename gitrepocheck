@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # 'gitrepocheck'. Check GIT repositories for changed stuff.
-# Copyright © 2015-2020 Mathias Bocquet <mbocquet@sekoya.org>
+# Copyright © 2015-2021 Mathias Bocquet <mbocquet@sekoya.org>
 
 while getopts ":h:p:s:" opts
 do
@@ -22,27 +22,21 @@ done
 # Create a temporary file with this script name as prefix
 TMPFILE="$(mktemp --suffix=-$(basename $0))"
 
-for REPO in $(find ${PATHTOCHECK} -xdev -type d -name .git)
+find ${PATHTOCHECK} -xdev -name .git 2>/dev/null|while read REPO
 do
     # Strip '/.git' part of the REPO
-    DIR=$(echo ${REPO}|sed 's;/.git;;')
+    DIR="$(dirname ${REPO})"
     # Do the action if $SKIP is empty or if $DIR doesn't contains $SKIP
     if [ -z "${SKIP}" ] || ! [[ "${DIR}" =~ "${SKIP}" ]]
     then
-        cd ${DIR}
-        git status > ${TMPFILE}
-        # if git status report nothing to commit, it looks like these two following
-        # lines :
-        # On branch <branchName>
-        # nothing to commit, working directory clean
-        # So if the last sentence, is not found, print the git status output
-        if ! grep -q "nothing to commit.*working.*clean" ${TMPFILE}
+        git --git-dir="${REPO}" --work-tree="${DIR}" status -bs > ${TMPFILE}
+        # output only if it has more than one line or contains [ahead|behind|... number]
+        if [ $(wc -l < ${TMPFILE}) -gt 1 ] || grep -q \\[.*\\] ${TMPFILE}
         then
-            printf "GIT repository at ${HOSTNAME}:${DIR} has changed\n"
+            printf "${DIR} "
             cat ${TMPFILE}
+            printf "\n"
         fi
-        cd - >/dev/null
-        # Blank the temporary file
         >${TMPFILE}
     fi
 done
